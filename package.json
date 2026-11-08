@@ -1,0 +1,21 @@
+{
+  "name": "sky-planner",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "catalogs": "python3 scripts/build-catalogs.py raw public/data"
+  },
+  "dependencies": {
+    "astronomy-engine": "^2.1.19",
+    "geomagnetism": "^0.2.0",
+    "satellite.js": "^7.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12"
+  }
+}

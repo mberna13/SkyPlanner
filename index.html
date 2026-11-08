@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0F1A">
+  <meta name="description" content="What's up tonight from where you are, and when it's best placed for your binoculars or Seestar.">
+  <title>Sky Planner</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+</head>
+<body>
+  <!-- Night-vision filter: keeps only brightness, shown in red. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="night-red" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.3 0.45 0.15 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+  </svg>
+
+  <div id="app" class="app" data-view="sky" data-detail="closed">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Sky Planner</h1>
+        <button type="button" class="loc-btn" data-action="open-settings" id="loc-label">Set location</button>
+      </div>
+      <div class="time-ctl" role="group" aria-label="Time">
+        <button type="button" class="icon-btn" data-action="time-step" data-step="-60" aria-label="One hour earlier">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" class="time-now" data-action="time-live" id="time-label" aria-live="polite">Now</button>
+        <button type="button" class="icon-btn" data-action="time-step" data-step="60" aria-label="One hour later">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="icon-btn" data-action="night" id="night-btn" aria-pressed="false" aria-label="Red night-vision mode">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        </button>
+        <button type="button" class="icon-btn" data-action="open-settings" aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section id="panel-tonight" class="panel panel-tonight" aria-label="Tonight"></section>
+
+      <section id="panel-sky" class="panel panel-sky" aria-label="Sky view">
+        <canvas id="sky" role="img" aria-label="All-sky chart"></canvas>
+        <div class="sky-chips" id="sky-chips" aria-live="polite"></div>
+        <div class="zoom-ctl" role="group" aria-label="Zoom">
+          <button type="button" class="icon-btn" data-action="zoom-in" aria-label="Zoom in">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button type="button" class="icon-btn" data-action="zoom-out" aria-label="Zoom out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14"/></svg>
+          </button>
+          <button type="button" class="icon-btn" data-action="zoom-reset" aria-label="Show the whole sky">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>
+          </button>
+          <span class="ctl-sep" aria-hidden="true"></span>
+          <button type="button" class="icon-btn" data-action="turn" id="turn-btn" aria-label="Turn the chart">
+            <!-- needle turns so its red tip always points to north on the chart -->
+            <svg id="turn-needle" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l3.2 9H8.8z" fill="#FF7A6B"/><path d="M12 21l-3.2-9h6.4z" fill="currentColor" opacity="0.7"/><circle cx="12" cy="12" r="1.4" fill="#0B0F1A"/></svg>
+          </button>
+          <button type="button" class="icon-btn" data-action="compass" id="compass-btn" aria-pressed="false" aria-label="Turn the chart with the device compass" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
+          </button>
+        </div>
+        <div class="sky-card" id="sky-card" hidden></div>
+      </section>
+
+      <aside id="panel-detail" class="panel panel-detail" aria-label="Object details"></aside>
+    </main>
+
+    <nav class="tabbar" aria-label="Main">
+      <button type="button" class="tab" data-action="view" data-id="sky" aria-current="page">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7l1.2 3.3L16.5 11l-3.3 1.2L12 15.5l-1.2-3.3L7.5 11l3.3-.7z"/></svg>
+        <span>Sky</span>
+      </button>
+      <button type="button" class="tab" data-action="view" data-id="tonight">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+        <span>Tonight</span>
+      </button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <dialog id="settings" class="settings" aria-labelledby="settings-title">
+    <form method="dialog" id="settings-form">
+      <div class="settings-head">
+        <h2 id="settings-title">Settings</h2>
+        <button type="submit" value="cancel" class="icon-btn" aria-label="Close settings" formnovalidate>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <p id="settings-intro" class="muted" hidden>Where are you observing from? Your location stays in this browser.</p>
+
+      <fieldset>
+        <legend>Location</legend>
+        <button type="button" class="btn" data-action="geolocate" id="geo-btn">Use my location</button>
+        <p class="fine" id="geo-status" aria-live="polite"></p>
+        <div class="grid3">
+          <label>Latitude<input name="lat" type="number" step="0.0001" min="-90" max="90" required inputmode="decimal"></label>
+          <label>Longitude<input name="lon" type="number" step="0.0001" min="-180" max="180" required inputmode="decimal"></label>
+          <label>Elevation (m)<input name="elev" type="number" step="1" min="-500" max="9000" inputmode="numeric"></label>
+        </div>
+        <label>Name (optional)<input name="name" type="text" maxlength="40" placeholder="Backyard"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sky and horizon</legend>
+        <label>How dark is your sky?<select name="skyLimit" id="sky-limit"></select></label>
+        <label>Lowest useful altitude<select name="minAlt">
+          <option value="15">15° (open horizon)</option>
+          <option value="20">20°</option>
+          <option value="30">30° (typical)</option>
+          <option value="40">40° (trees or buildings)</option>
+        </select></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Chart orientation</legend>
+        <label class="check"><input type="radio" name="chartStyle" value="map"> Map style: north up, east on the right, like a map</label>
+        <label class="check"><input type="radio" name="chartStyle" value="overhead"> Overhead style: east on the left, as when lying back looking up (traditional star charts)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sky view</legend>
+        <label class="check"><input type="checkbox" name="showConstellations"> Constellation lines</label>
+        <label class="check"><input type="checkbox" name="showConstNames"> Constellation names</label>
+        <label class="check"><input type="checkbox" name="showMilkyWay"> Milky Way band</label>
+        <label class="check"><input type="checkbox" name="showDsos"> Deep-sky objects</label>
+        <label class="check"><input type="checkbox" name="showSats"> Satellites</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Satellite data</legend>
+        <p class="fine" id="sat-status"></p>
+        <label>Source URLs (one per line, OMM JSON)<textarea name="satUrls" rows="3" spellcheck="false"></textarea></label>
+        <button type="button" class="btn" data-action="refresh-sats">Refresh now</button>
+      </fieldset>
+
+      <div class="btn-row end">
+        <button type="submit" value="save" class="btn btn-primary">Save</button>
+      </div>
+      <p class="fine">Data: stars and constellations from <a href="https://github.com/ofrohn/d3-celestial">d3-celestial</a> (BSD-3-Clause); deep-sky objects from <a href="https://github.com/mattiaverga/OpenNGC">OpenNGC</a> (CC BY-SA 4.0); satellite orbits from <a href="https://celestrak.org">CelesTrak</a>; cloud cover from the US National Weather Service. Positions computed with astronomy-engine and satellite.js.</p>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
